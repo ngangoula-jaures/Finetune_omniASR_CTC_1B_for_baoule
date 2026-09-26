@@ -9,6 +9,13 @@ Cette analyse repose sur l'audit Kaggle des révisions suivantes :
 
 Les trois splits de chaque source ont été parcourus. Les 2 092 fichiers ont tous été décodés. Aucun fichier vide, silencieux ou illisible n'a été rejeté automatiquement et aucun doublon audio exact n'a été trouvé.
 
+Après correction de l'audit pour séparer les transformations automatiques des défauts à examiner :
+
+- 1 480 exemples sont acceptés directement ;
+- 612 exemples sont marqués pour revue ;
+- aucun exemple n'est rejeté automatiquement ;
+- les 1 216 fichiers Waxal portent l'action automatique `resample_to_16khz`, sans être signalés pour cette seule raison.
+
 ## 2. Vue d'ensemble
 
 | Source | Split | Exemples | Locuteurs | Durée totale | Exemples ≤ 35 s | Durée ≤ 35 s | Exemples > 35 s | Durée > 35 s |
@@ -29,6 +36,18 @@ Sans segmenter les fichiers de plus de 35 secondes, le train directement exploit
 - 1 093 fichiers et environ 3,151 heures au total avant les autres contrôles de qualité.
 
 La segmentation alignée des fichiers longs Waxal peut potentiellement récupérer jusqu'à 8,518 heures supplémentaires pour l'entraînement. Elle constitue donc une étape importante, mais elle ne doit pas être faite par découpage arbitraire.
+
+Avec les règles automatiques strictes, 836 exemples du train sont acceptés sans signalement, pour environ 2,292 heures :
+
+- Waxal : 547 exemples et 1,681 heure ;
+- Klayt : 289 exemples et 0,611 heure.
+
+Si les silences initiaux et finaux sont traités comme une transformation de rognage plutôt que comme un défaut bloquant, le premier mélange court peut atteindre 1 089 exemples et environ 3,141 heures :
+
+- Waxal : 770 exemples et 2,447 heures ;
+- Klayt : 319 exemples et 0,694 heure.
+
+Ces chiffres n'autorisent pas encore l'entraînement définitif : les fichiers Klayt doivent être contrôlés pour la présence de voix non transcrites.
 
 ## 3. Fréquences d'échantillonnage
 
@@ -91,6 +110,8 @@ Le split d'entraînement compte 30 fichiers signalés, la validation 15 et le te
 Un locuteur du test Klayt, dont l'identifiant commence par `ac0f60ef`, représente 13 fichiers et ses 13 fichiers sont à faible niveau. Ce sous-ensemble peut servir de test de robustesse au faible volume. Il ne doit pas être supprimé automatiquement du test.
 
 Les fichiers de train contenant seulement du silence avant ou après la phrase pourront être rognés avec une marge. Ceux qui contiennent une autre voix doivent être écoutés et découpés autour de la parole cible, ou exclus si l'alignement reste ambigu.
+
+Après le nouvel audit, Klayt contient 806 exemples acceptés directement et 70 en revue. Le train contient 289 acceptés et 30 signalés uniquement pour leurs silences. Comme l'utilisateur a observé des voix précédant parfois le traducteur, l'absence de signalement automatique ne garantit pas l'absence de parole parasite : le détecteur mesure les marges silencieuses, il ne réalise pas de diarisation.
 
 ### 6.2 Waxal
 
@@ -195,5 +216,10 @@ La prochaine phase d'exécution doit produire :
 4. un premier MixtureParquet limité aux exemples courts validés ;
 5. un test du dataloader Meta avant tout chargement du CTC-1B.
 
-Le smoke test du modèle ne doit pas commencer avec les 1 286 lignes de revue actuelles telles quelles : ce nombre est artificiellement gonflé par les 1 216 fichiers Waxal à rééchantillonner. Le script d'audit a été corrigé pour séparer les transformations automatiques des véritables raisons de revue.
+Le nouvel audit contient maintenant 612 lignes de revue ciblées au lieu des 1 286 lignes initiales. La prochaine sélection devra distinguer :
 
+- les silences rognables automatiquement ;
+- les fichiers longs à segmenter ;
+- les ratios texte–audio à vérifier ;
+- la fuite textuelle train–test à supprimer ;
+- les voix parasites de Klayt qui nécessitent une écoute.

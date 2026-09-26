@@ -16,6 +16,7 @@ Le protocole complet est décrit dans [PLAN_FINETUNING_OMNIASR_CTC_1B_BAOULE.md]
 - [x] Configurations initiales du smoke test et du fine-tuning
 - [x] Exécution de l'audit complet sur Kaggle
 - [x] Analyse statistique initiale de l'audit
+- [x] Génération de la file de revue manuelle
 - [ ] Revue des exemples signalés par l'audit
 - [ ] Préparation du mélange MixtureParquet
 - [ ] Smoke test CTC-1B sur les deux T4
@@ -87,3 +88,14 @@ python -m compileall -q src tests
 ## Règle avant entraînement
 
 Le mélange MixtureParquet ne sera produit qu'après lecture du résumé d'audit et décision sur les exemples contenant une voix parasite, une transcription douteuse, un doublon ou un fichier trop long.
+
+## Deuxième étape : revue audio manuelle
+
+Le notebook `notebooks/02_review_audio_kaggle.ipynb` transforme l'audit en
+manifeste de décisions, charge les deux datasets aux révisions auditées et
+permet d'écouter chaque exemple signalé. Les décisions autorisées sont
+`keep`, `trim`, `segment` et `exclude`.
+
+Chaque décision est immédiatement sauvegardée dans
+`/kaggle/working/baoule_ctc1b_review/decision_manifest_reviewed.csv`. Le
+dossier de revue doit être téléchargé avant la fermeture de la session Kaggle.
