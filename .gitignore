@@ -1,0 +1,9 @@
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# Les rapports complets et caches sont des artefacts locaux/Kaggle.
+reports/dataset_audit/
+artifacts/
+hf-cache/
+
