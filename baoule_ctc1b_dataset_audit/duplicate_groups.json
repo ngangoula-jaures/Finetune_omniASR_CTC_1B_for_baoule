@@ -1,0 +1,115 @@
+{
+  "audio": [],
+  "normalized_text": [
+    {
+      "key": "text_sha256",
+      "sha256": "0cb0b046155d5cecb3f78037620e16013868817b3c2a67a9aa83e4e7ea64f32d",
+      "count": 2,
+      "cross_split": false,
+      "members": [
+        {
+          "source": "waxal",
+          "split": "train",
+          "row_index": 85,
+          "example_id": "bau_RK_RK_BCI_1_18c",
+          "speaker_id": "waxal:RK"
+        },
+        {
+          "source": "waxal",
+          "split": "train",
+          "row_index": 198,
+          "example_id": "bau_RK_RK_BCI_1_5c",
+          "speaker_id": "waxal:RK"
+        }
+      ]
+    },
+    {
+      "key": "text_sha256",
+      "sha256": "65e88e8666d1110f4bcd6ffc5d908af7edbaf7dfa95589a79a987e46edda7b89",
+      "count": 2,
+      "cross_split": false,
+      "members": [
+        {
+          "source": "waxal",
+          "split": "train",
+          "row_index": 519,
+          "example_id": "bau_RK_RK_BCI_1_15b",
+          "speaker_id": "waxal:RK"
+        },
+        {
+          "source": "waxal",
+          "split": "train",
+          "row_index": 798,
+          "example_id": "bau_RK_RK_BCI_1_14a",
+          "speaker_id": "waxal:RK"
+        }
+      ]
+    },
+    {
+      "key": "text_sha256",
+      "sha256": "067d6a9483fea84dd4eaadcf98c5aff0f4c881d020848d79fb168452a548a715",
+      "count": 2,
+      "cross_split": false,
+      "members": [
+        {
+          "source": "waxal",
+          "split": "train",
+          "row_index": 573,
+          "example_id": "bau_KK_KK_BCI_2_146",
+          "speaker_id": "waxal:KK"
+        },
+        {
+          "source": "waxal",
+          "split": "train",
+          "row_index": 901,
+          "example_id": "bau_KK_KK_BCI_2_188",
+          "speaker_id": "waxal:KK"
+        }
+      ]
+    },
+    {
+      "key": "text_sha256",
+      "sha256": "6a554b7db398a521d5a7698ee07788117b33b48a7cf3097b37f82e746f58cdb2",
+      "count": 2,
+      "cross_split": true,
+      "members": [
+        {
+          "source": "waxal",
+          "split": "train",
+          "row_index": 855,
+          "example_id": "bau_KK_KK_BCI_4_227",
+          "speaker_id": "waxal:KK"
+        },
+        {
+          "source": "waxal",
+          "split": "test",
+          "row_index": 92,
+          "example_id": "bau_KK_KK_BCI_4_239",
+          "speaker_id": "waxal:KK"
+        }
+      ]
+    },
+    {
+      "key": "text_sha256",
+      "sha256": "00542a1be5ca387f886a625dbd4def34985d483901aecfbf85c9d5b11209ee96",
+      "count": 2,
+      "cross_split": false,
+      "members": [
+        {
+          "source": "waxal",
+          "split": "train",
+          "row_index": 917,
+          "example_id": "bau_RK_RK_BCI_1_27b",
+          "speaker_id": "waxal:RK"
+        },
+        {
+          "source": "waxal",
+          "split": "train",
+          "row_index": 964,
+          "example_id": "bau_RK_RK_BCI_1_19a",
+          "speaker_id": "waxal:RK"
+        }
+      ]
+    }
+  ]
+}

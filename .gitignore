@@ -4,7 +4,10 @@ __pycache__/
 
 # Les rapports complets et caches sont des artefacts locaux/Kaggle.
 reports/dataset_audit/
-/baoule_ctc1b_dataset_audit*/
+/baoule_ctc1b_dataset_audit/*
+!/baoule_ctc1b_dataset_audit/dataset_audit.csv
+!/baoule_ctc1b_dataset_audit/duplicate_groups.json
+/baoule_ctc1b_dataset_audit_*/
 artifacts/
 hf-cache/
 *:Zone.Identifier

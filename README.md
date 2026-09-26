@@ -96,6 +96,11 @@ manifeste de décisions, charge les deux datasets aux révisions auditées et
 permet d'écouter chaque exemple signalé. Les décisions autorisées sont
 `keep`, `trim`, `segment` et `exclude`.
 
+Les deux fichiers minimaux nécessaires à cette étape sont versionnés dans
+`baoule_ctc1b_dataset_audit/`. Le notebook les récupère donc avec le dépôt et
+fonctionne dans une nouvelle session Kaggle sans ajouter l'audit comme Dataset
+d'entrée. Les autres artefacts volumineux de l'audit restent ignorés.
+
 Chaque décision est immédiatement sauvegardée dans
 `/kaggle/working/baoule_ctc1b_review/decision_manifest_reviewed.csv`. Le
 dossier de revue doit être téléchargé avant la fermeture de la session Kaggle.
