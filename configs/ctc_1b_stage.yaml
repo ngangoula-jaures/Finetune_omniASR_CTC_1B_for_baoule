@@ -1,0 +1,77 @@
+model:
+  name: "omniASR_CTC_1B"
+
+dataset:
+  name: "baoule_mixed"
+  train_split: "train"
+  valid_split: "dev"
+  storage_mode: "MIXTURE_PARQUET"
+  task_mode: "ASR"
+  mixture_parquet_storage_config:
+    dataset_summary_path: "/kaggle/working/baoule_ctc1b_data/language_distribution_0.tsv"
+    beta_corpus: 0.5
+    beta_language: 0.5
+    fragment_loading:
+      cache: false
+  asr_task_config:
+    min_audio_len: 16_000
+    max_audio_len: 320_000
+    max_num_elements: 320_000
+    batch_shuffle_window: 1
+    normalize_audio: true
+    example_shuffle_window: 1000
+
+tokenizer:
+  name: "omniASR_tokenizer_v1"
+
+optimizer:
+  config:
+    lr: 1.0e-5
+    betas: [0.9, 0.98]
+    eps: 1.0e-8
+    weight_decay: 0.0
+
+# Ce scheduler ne dépend pas de la cible finale du bloc. Sa courbe reste donc
+# continue lorsqu'un checkpoint complet est repris à 250, 500, 750 pas, etc.
+lr_scheduler:
+  name: "myle"
+  config:
+    num_warmup_steps: 25
+    start_lr: 1.0e-7
+
+trainer:
+  data_parallelism: "fsdp"
+  fsdp:
+    granularity: "stack"
+    version: "v1"
+    fp32_reduce: false
+  freeze_encoder_for_n_steps: 0
+  mixed_precision:
+    dtype: "torch.float16"
+  fp16_loss_scale: [32.0, 0.0001]
+  grad_accumulation:
+    num_batches: 8
+  activation_checkpointing:
+    mode: "layerwise"
+    every_nth_layer: 1
+  max_grad_norm: 1.0
+
+regime:
+  # Le notebook remplace uniquement cette valeur par 250, 500, 750, etc.
+  num_steps: 250
+  score_metric: "wer"
+  validate_after_n_steps: 50
+  validate_every_n_steps: 50
+  checkpoint_after_n_steps: 250
+  checkpoint_every_n_steps: 250
+  publish_metrics_after_n_steps: 25
+  publish_metrics_every_n_steps: 25
+
+common:
+  seed: 42
+  # Indispensable pour retrouver le même dossier lors d'une reprise avec une
+  # nouvelle cible num_steps.
+  no_sweep_dir: true
+  assets:
+    extra_paths:
+      - "/kaggle/working/baoule_ctc1b_data/assets"

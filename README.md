@@ -23,8 +23,10 @@ Le protocole complet est décrit dans [PLAN_FINETUNING_OMNIASR_CTC_1B_BAOULE.md]
 - [x] Exécution de la préparation MixtureParquet sur Kaggle
 - [x] Publication dans `Tree-AI-lab/baoule-asr-dataset-mixture`
 - [x] Notebook et lanceur instrumenté du smoke test CTC-1B
-- [ ] Smoke test CTC-1B sur les deux T4
-- [ ] Entraînement par blocs de 500 pas
+- [x] Smoke test CTC-1B sur les deux T4
+- [x] Analyse des contraintes mémoire, temps et disque du smoke test
+- [x] Pipeline Kaggle d'entraînement et de reprise par blocs de 250 pas
+- [ ] Exécution du premier bloc réel de 250 pas
 - [ ] Évaluation et export Hugging Face
 
 ## Organisation
@@ -138,5 +140,22 @@ sur exactement deux T4. Le lanceur `src/run_smoke_test.py` archive :
   `smoke_summary.json`.
 
 Le test doit produire un checkpoint complet et terminer sans erreur avant de
-préparer le premier bloc de 500 pas. Le dossier de sortie Kaggle doit être
+préparer le premier bloc de 250 pas. Le dossier de sortie Kaggle doit être
 sauvegardé avec **Save Version**, puis téléchargé pour analyse.
+
+Les résultats sont consignés dans
+`reports/SMOKE_TEST_RESULTS.md`. Ils ont conduit à retenir des blocs de 250 pas
+plutôt que 500 pour la première phase réelle.
+
+## Cinquième étape : entraînement réel par blocs
+
+Le notebook `notebooks/05_train_ctc1b_staged_kaggle.ipynb` exécute le premier
+bloc de 0 à 250 pas. Il utilise `configs/ctc_1b_stage.yaml`, valide tous les
+50 pas et sauvegarde l'état complet au pas 250.
+
+Après le bloc, un panneau fixe de quatre exemples du split `dev` est transcrit.
+Le manifeste du panneau, les prédictions, les métriques, les logs et le
+checkpoint sont conservés dans la sortie Kaggle. Pour le bloc suivant, la
+sortie précédente doit être ajoutée comme Input et `TARGET_STEP` doit passer à
+500. Le checkpoint précédent reste monté en lecture seule afin de ne pas
+occuper deux fois environ 10,87 Gio dans `/kaggle/working`.

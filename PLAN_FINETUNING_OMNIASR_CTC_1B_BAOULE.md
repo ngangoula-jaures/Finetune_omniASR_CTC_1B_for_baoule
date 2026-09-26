@@ -76,7 +76,7 @@ Le premier entraînement a permis d'améliorer fortement le CTC-300M, mais son p
 | Sélection et benchmark sur le même split de validation Waxal | Estimation optimiste du checkpoint sélectionné | Séparation stricte entre développement et test final |
 | Sauvegarde `save_model_only` | Reprise exacte impossible après interruption | Sauvegarde périodique de l'état complet du trainer et export séparé du modèle |
 | Sélection sur un WER global unique | Le corpus majoritaire peut masquer une régression sur l'autre domaine | Métriques séparées par corpus et score macro de sélection |
-| Entraînement jusqu'à 60 s alors que l'inférence standard est limitée à moins de 40 s | Décalage entre entraînement et déploiement | Segments alignés d'au plus 30–35 s pour la recette principale |
+| Entraînement jusqu'à 60 s alors que l'inférence standard est limitée à moins de 40 s | Décalage entre entraînement et déploiement | 20 s sur les T4 validées ; segments plus longs après nouvelle mesure matérielle |
 
 Le passage de 300M à 1B augmente la capacité, mais aussi les risques de surapprentissage, d'instabilité et de saturation mémoire. Les corrections de données et d'évaluation sont donc aussi importantes que le changement de taille du modèle.
 
@@ -181,7 +181,7 @@ Pour un fichier dépassant la durée cible :
 1. produire une première transcription et un alignement avec le modèle de base ou un aligneur CTC ;
 2. estimer les frontières temporelles des tokens ou des mots ;
 3. découper aux silences proches de ces frontières ;
-4. limiter les segments à environ 30–35 secondes ;
+4. limiter les segments à 20 secondes sur les T4 validées ;
 5. associer à chaque segment uniquement le texte aligné ;
 6. rejeter ou envoyer en révision manuelle les alignements de faible confiance.
 
@@ -243,16 +243,16 @@ Les valeurs ci-dessous constituent le point de départ, pas une garantie d'optim
 | Tokenizer | `omniASR_tokenizer_v1` |
 | Fréquence audio | mono 16 kHz |
 | Durée minimale | 1 à 2 s, fixée après audit |
-| Durée maximale principale | 30–35 s après segmentation alignée |
+| Durée maximale principale | 20 s sur les deux T4, d'après le smoke test |
 | Optimiseur | celui de la recette CTC officielle, état intégral sauvegardé |
 | Learning rate | `1e-5` comme référence ; comparaison limitée avec `5e-6` si nécessaire |
 | Précision | BF16 sur GPU compatible ; FP16 contrôlé sur T4 |
 | Activation checkpointing | couche par couche |
 | Gradient clipping | norme maximale 1,0 |
 | Nombre maximal de pas | 5 000 |
-| Validation | toutes les 500 étapes par défaut |
-| Checkpoints | toutes les 500 étapes, état complet |
-| Transcription témoin | après chaque checkpoint de 500 étapes |
+| Validation | toutes les 50 étapes pendant la phase hackathon |
+| Checkpoints | toutes les 250 étapes, état complet |
+| Transcription témoin | après chaque checkpoint de 250 étapes |
 | Arrêt anticipé | patience définie sur plusieurs validations, après une durée minimale d'entraînement |
 | Seeds | au moins trois pour l'expérience finale si le budget le permet |
 
@@ -275,13 +275,18 @@ Cette variante ne sera retenue que si elle réduit l'instabilité ou améliore l
 
 ### 11.3 Scheduler et warm-up
 
-Le scheduler effectif et son warm-up seront écrits explicitement dans le fichier de configuration ou enregistrés depuis les valeurs par défaut de fairseq2. Aucun paramètre important ne devra dépendre d'une valeur implicite non archivée.
+Le smoke test utilisait le scheduler tri-stage officiel. Comme celui-ci calcule
+sa courbe à partir de `regime.num_steps`, augmenter la cible de 250 à 500 entre
+deux sessions changerait la courbe au moment de la reprise. Le pipeline par
+blocs utilise donc le scheduler `myle` de fairseq2 avec 25 pas de warm-up et un
+LR maximal de `1e-5`. Il dépend du numéro de pas global et préserve ainsi la
+continuité du LR après restauration du scheduler.
 
-### 11.4 Transcription témoin toutes les 500 étapes
+### 11.4 Transcription témoin toutes les 250 étapes
 
 Un audio témoin fixe sera choisi dans le split de validation, jamais dans le test final. Il devra être assez court pour être transcrit rapidement et représentatif d'une difficulté utile, sans être un cas manifestement corrompu.
 
-Après les pas 500, 1 000, 1 500, etc., le notebook devra :
+Après les pas 250, 500, 750, etc., le notebook devra :
 
 1. terminer et sauvegarder le checkpoint courant ;
 2. recharger ou utiliser ce checkpoint en mode évaluation ;
@@ -295,9 +300,9 @@ L'historique rendra visible l'évolution qualitative :
 
 ```text
 step,reference,prediction,wer,cer,checkpoint
+250,...
 500,...
-1000,...
-1500,...
+750,...
 ```
 
 Le même exemple peut être observé à chaque étape pour suivre les changements, mais il devient alors un exemple de développement. Il ne doit pas être utilisé comme preuve finale de qualité. Une transcription qui paraît bonne peut masquer une dégradation sur les autres phrases ; la décision d'arrêter doit donc combiner l'écoute de cet exemple et les métriques complètes de validation.
@@ -348,7 +353,11 @@ Avant l'entraînement réel, le notebook exécutera un test de 5 à 20 mises à 
 - la taille du checkpoint complet ;
 - l'espace disque restant après sauvegarde.
 
-Si 500 pas ne peuvent pas tenir dans une session de 12 heures avec une marge suffisante pour l'évaluation et la sauvegarde, l'intervalle sera réduit à 250 pas. Le choix de 500 reste la valeur par défaut tant que le test de débit la confirme.
+Le smoke test a confirmé qu'un bloc de 250 pas tient dans une session de
+12 heures, mais aussi que la mémoire GPU et le disque sont presque saturés.
+L'intervalle retenu est donc 250 pas. La sortie précédente est montée depuis un
+Input Kaggle en lecture seule afin que `/kaggle/working` ne contienne jamais
+deux checkpoints complets simultanément.
 
 Le disque devra conserver au maximum :
 
@@ -365,11 +374,11 @@ Le protocole évitera de modifier simultanément les données, les augmentations
 
 ### Exécution interactive par blocs sur Kaggle
 
-Le mode Kaggle par défaut n'exécutera pas aveuglément les 5 000 pas en une seule cellule. L'entraînement sera organisé en blocs de 500 pas :
+Le mode Kaggle par défaut n'exécutera pas aveuglément les 5 000 pas en une seule cellule. L'entraînement sera organisé en blocs de 250 pas :
 
 ```text
 charger ou reprendre l'état complet
-→ entraîner 500 pas supplémentaires
+→ entraîner 250 pas supplémentaires
 → sauvegarder le checkpoint complet
 → valider sur Waxal et Klayt
 → transcrire l'audio témoin
@@ -377,11 +386,13 @@ charger ou reprendre l'état complet
 → attendre la décision de lancer le bloc suivant
 ```
 
-Une fonction ou cellule `run_next_stage()` déterminera automatiquement la prochaine cible — 500, 1 000, 1 500 pas, etc. — et reprendra l'optimiseur, le scheduler, le compteur de pas et le scaler de précision mixte. Le run de 1 000 pas ne devra pas repartir du modèle Meta comme dans l'ancienne expérience.
+Le notebook détermine la prochaine cible — 250, 500, 750 pas, etc. — et
+reprend l'optimiseur, le scheduler, le compteur de pas, le DataLoader et le
+scaler de précision mixte. Le run de 500 pas ne repart donc pas du modèle Meta.
 
 À la fin de chaque bloc, l'utilisateur pourra :
 
-- poursuivre avec 500 pas supplémentaires ;
+- poursuivre avec 250 pas supplémentaires ;
 - arrêter provisoirement et reprendre dans une autre session ;
 - sélectionner le checkpoint déjà sauvegardé ;
 - lancer l'export des poids `model-only` puis leur conversion ou publication Hugging Face.

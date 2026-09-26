@@ -38,10 +38,10 @@ Le smoke test est accepté si :
 ## Décision après exécution
 
 Les fichiers `smoke_summary.json`, `gpu_metrics.csv` et `smoke_console.log`
-seront analysés avant le run suivant. La limite de 40 secondes du vrai
-fine-tuning ne sera conservée que si la marge mémoire le permet. Le débit
-mesuré déterminera aussi si les évaluations et sauvegardes restent espacées de
-500 pas ou doivent être ramenées à 250 pas pour tenir dans une session Kaggle.
+seront analysés avant le run suivant. Le résultat a conduit à conserver une
+limite de 20 secondes pour le fine-tuning sur T4 et à espacer les checkpoints
+complets de 250 pas. Les validations intermédiaires sont effectuées tous les
+50 pas.
 
 Une réussite technique du smoke test n'autorise pas encore l'usage du split
 test pour piloter l'entraînement : le choix des checkpoints reposera sur le
