@@ -68,4 +68,4 @@ common:
   seed: 42
   assets:
     extra_paths:
-      - "/kaggle/working/baoule_ctc1b_assets"
+      - "/kaggle/working/baoule_ctc1b_data/assets"

@@ -20,7 +20,9 @@ Le protocole complet est décrit dans [PLAN_FINETUNING_OMNIASR_CTC_1B_BAOULE.md]
 - [x] Revue hackathon partielle des exemples signalés
 - [x] Politique de sélection hackathon figée et testée
 - [x] Script et notebook de préparation MixtureParquet
-- [ ] Exécution de la préparation MixtureParquet sur Kaggle
+- [x] Exécution de la préparation MixtureParquet sur Kaggle
+- [x] Publication dans `Tree-AI-lab/baoule-asr-hackathon-mixture`
+- [x] Notebook et lanceur instrumenté du smoke test CTC-1B
 - [ ] Smoke test CTC-1B sur les deux T4
 - [ ] Entraînement par blocs de 500 pas
 - [ ] Évaluation et export Hugging Face
@@ -123,3 +125,18 @@ GitHub.
 La dernière cellule du notebook publie le dossier généré dans
 `Tree-AI-lab/baoule-asr-hackathon-mixture`. Elle lit un token d'écriture depuis
 le secret Kaggle `HF_TOKEN` ; le secret n'est jamais stocké dans le dépôt.
+
+## Quatrième étape : smoke test CTC-1B
+
+Le notebook `notebooks/04_smoke_test_ctc1b_kaggle.ipynb` télécharge le dataset
+Tree AI Lab, vérifie le DataLoader officiel puis lance 20 pas en FP16 avec FSDP
+sur exactement deux T4. Le lanceur `src/run_smoke_test.py` archive :
+
+- toute la sortie console dans `smoke_console.log` ;
+- la VRAM et l'utilisation de chaque GPU dans `gpu_metrics.csv` ;
+- les versions logicielles, commits, temps, estimations et checkpoints dans
+  `smoke_summary.json`.
+
+Le test doit produire un checkpoint complet et terminer sans erreur avant de
+préparer le premier bloc de 500 pas. Le dossier de sortie Kaggle doit être
+sauvegardé avec **Save Version**, puis téléchargé pour analyse.
