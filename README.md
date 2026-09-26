@@ -17,8 +17,10 @@ Le protocole complet est décrit dans [PLAN_FINETUNING_OMNIASR_CTC_1B_BAOULE.md]
 - [x] Exécution de l'audit complet sur Kaggle
 - [x] Analyse statistique initiale de l'audit
 - [x] Génération de la file de revue manuelle
-- [ ] Revue des exemples signalés par l'audit
-- [ ] Préparation du mélange MixtureParquet
+- [x] Revue hackathon partielle des exemples signalés
+- [x] Politique de sélection hackathon figée et testée
+- [x] Script et notebook de préparation MixtureParquet
+- [ ] Exécution de la préparation MixtureParquet sur Kaggle
 - [ ] Smoke test CTC-1B sur les deux T4
 - [ ] Entraînement par blocs de 500 pas
 - [ ] Évaluation et export Hugging Face
@@ -104,3 +106,16 @@ d'entrée. Les autres artefacts volumineux de l'audit restent ignorés.
 Chaque décision est immédiatement sauvegardée dans
 `/kaggle/working/baoule_ctc1b_review/decision_manifest_reviewed.csv`. Le
 dossier de revue doit être téléchargé avant la fermeture de la session Kaggle.
+
+## Troisième étape : préparation MixtureParquet
+
+Le notebook `notebooks/03_prepare_mixture_kaggle.ipynb` construit le corpus
+utilisé pendant le hackathon. La sélection contient les exemples validés
+manuellement, les validations automatiques et les audios Waxal non rejetés de
+40 secondes maximum. Les exclusions manuelles sont prioritaires ; les audios
+longs et les Klayt non révisés restent différés.
+
+Le script convertit les audios en FLAC mono 16 kHz et crée le partitionnement
+Hive requis par OmniASR : `corpus`, `split` et `language=bci_Latn`. Les Parquet
+générés restent dans les sorties Kaggle et ne doivent pas être versionnés dans
+GitHub.

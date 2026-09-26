@@ -15,8 +15,8 @@ dataset:
       cache: false
   asr_task_config:
     min_audio_len: 16_000
-    max_audio_len: 560_000
-    max_num_elements: 560_000
+    max_audio_len: 640_000
+    max_num_elements: 640_000
     batch_shuffle_window: 1
     normalize_audio: true
     example_shuffle_window: 1000

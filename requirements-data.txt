@@ -1,0 +1,6 @@
+datasets[audio]>=4.0,<5
+numpy>=1.26,<3
+pandas>=2,<3
+pyarrow>=20,<22
+scipy>=1.13,<2
+soundfile>=0.13,<1
