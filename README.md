@@ -21,7 +21,7 @@ Le protocole complet est décrit dans [PLAN_FINETUNING_OMNIASR_CTC_1B_BAOULE.md]
 - [x] Politique de sélection hackathon figée et testée
 - [x] Script et notebook de préparation MixtureParquet
 - [x] Exécution de la préparation MixtureParquet sur Kaggle
-- [x] Publication dans `Tree-AI-lab/baoule-asr-hackathon-mixture`
+- [x] Publication dans `Tree-AI-lab/baoule-asr-dataset-mixture`
 - [x] Notebook et lanceur instrumenté du smoke test CTC-1B
 - [ ] Smoke test CTC-1B sur les deux T4
 - [ ] Entraînement par blocs de 500 pas
@@ -123,7 +123,7 @@ générés restent dans les sorties Kaggle et ne doivent pas être versionnés d
 GitHub.
 
 La dernière cellule du notebook publie le dossier généré dans
-`Tree-AI-lab/baoule-asr-hackathon-mixture`. Elle lit un token d'écriture depuis
+`Tree-AI-lab/baoule-asr-dataset-mixture`. Elle lit un token d'écriture depuis
 le secret Kaggle `HF_TOKEN` ; le secret n'est jamais stocké dans le dépôt.
 
 ## Quatrième étape : smoke test CTC-1B

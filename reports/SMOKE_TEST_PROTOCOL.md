@@ -10,7 +10,7 @@ GPU T4.
 ## Configuration testée
 
 - modèle : `omniASR_CTC_1B` ;
-- dataset : `Tree-AI-lab/baoule-asr-hackathon-mixture` ;
+- dataset : `Tree-AI-lab/baoule-asr-dataset-mixture` ;
 - matériel : exactement deux T4 ;
 - précision : FP16 ;
 - parallélisme : FSDP, deux processus ;
