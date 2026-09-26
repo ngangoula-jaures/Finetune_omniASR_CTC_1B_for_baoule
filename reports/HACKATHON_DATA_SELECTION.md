@@ -72,6 +72,11 @@ baoule_mixed/version=0/
 
 Toutes les partitions utilisent `language=bci_Latn`.
 
+Le dépôt Hugging Face prévu pour cette version est
+`Tree-AI-lab/baoule-asr-hackathon-mixture`. Il est créé en privé par défaut ;
+sa visibilité pourra être changée explicitement après vérification des fichiers
+et de la fiche de dataset.
+
 ## Limites connues
 
 - Le train Klayt validé est encore petit : 23 exemples.

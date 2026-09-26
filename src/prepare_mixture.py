@@ -396,6 +396,85 @@ def write_asset_card(path: Path, dataset_root: Path) -> None:
     )
 
 
+def write_dataset_card(path: Path, summary: dict[str, Any]) -> None:
+    totals = summary["totals"]
+    groups = summary["materialized_groups"]
+    table_rows = []
+    for key, values in sorted(groups.items()):
+        source, split = key.split(":", 1)
+        table_rows.append(
+            f"| {source} | {split} | {values['examples']} | {values['hours']:.3f} |"
+        )
+    path.write_text(
+        "\n".join(
+            [
+                "---",
+                "pretty_name: Baoulé ASR Hackathon Mixture",
+                "language:",
+                "- bci",
+                "task_categories:",
+                "- automatic-speech-recognition",
+                "tags:",
+                "- audio",
+                "- baoule",
+                "- omnilingual-asr",
+                "- mixture-parquet",
+                "---",
+                "",
+                "# Baoulé ASR Hackathon Mixture",
+                "",
+                "Dataset MixtureParquet préparé par Tree AI Lab pour le fine-tuning de ",
+                "`facebook/omniASR-CTC-1B` en baoulé (`bci_Latn`).",
+                "",
+                "## Contenu",
+                "",
+                f"- Exemples sélectionnés : {totals['selected_examples']}",
+                f"- Durée avant réencodage : {totals['selected_hours_before_materialization']:.3f} h",
+                "- Audio : FLAC mono 16 kHz, 40 secondes maximum",
+                "- Texte : transcription baoulé normalisée",
+                "",
+                "| Source | Split | Exemples | Heures |",
+                "|---|---:|---:|---:|",
+                *table_rows,
+                "",
+                "## Sources et versions",
+                "",
+                f"- `google/WaxalNLP`, configuration `bau_tts`, révision `{DEFAULT_WAXAL_REVISION}`",
+                f"- `Klayt/baoule-common-voice`, révision `{DEFAULT_KLAYT_REVISION}`",
+                "",
+                "WaxalNLP affiche des licences CC BY 4.0 et CC BY-SA 4.0 selon ses données. ",
+                "Klayt/baoule-common-voice est publié sous CC0 1.0. Les utilisateurs doivent ",
+                "respecter les licences et obligations d'attribution des sources d'origine.",
+                "",
+                "## Sélection hackathon",
+                "",
+                "Le corpus contient les exemples validés manuellement, les validations automatiques ",
+                "et les Waxal non rejetés de 40 secondes maximum. Les exclusions manuelles sont ",
+                "respectées. Les Klayt non révisés et les Waxal longs restent différés.",
+                "",
+                "Le fichier `hackathon_selection_manifest.csv` conserve la décision et la raison ",
+                "pour chaque exemple audité.",
+                "",
+                "## Format OmniASR",
+                "",
+                "```text",
+                "baoule_mixed/version=0/corpus=<waxal|klayt>/split=<train|dev|test>/language=bci_Latn/part-*.parquet",
+                "```",
+                "",
+                "Chaque ligne contient `text`, `audio_bytes` et `audio_size`. Les colonnes ",
+                "`corpus`, `split` et `language` proviennent des partitions Hive.",
+                "",
+                "## Limites",
+                "",
+                "Cette version est un sous-ensemble destiné au hackathon. La revue manuelle et la ",
+                "segmentation des enregistrements longs continueront après l'événement.",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+
 def main() -> int:
     args = parse_args()
     if args.waxal_max_seconds <= 0 or args.waxal_max_seconds > 40:
@@ -432,6 +511,7 @@ def main() -> int:
         write_asset_card(
             output_dir / "assets" / "baoule_mixed.yaml", dataset_root
         )
+        write_dataset_card(output_dir / "README.md", summary)
 
     (output_dir / "preparation_summary.json").write_text(
         json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8"

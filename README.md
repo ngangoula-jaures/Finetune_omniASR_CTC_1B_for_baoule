@@ -119,3 +119,7 @@ Le script convertit les audios en FLAC mono 16 kHz et crée le partitionnement
 Hive requis par OmniASR : `corpus`, `split` et `language=bci_Latn`. Les Parquet
 générés restent dans les sorties Kaggle et ne doivent pas être versionnés dans
 GitHub.
+
+La dernière cellule du notebook publie le dossier généré dans
+`Tree-AI-lab/baoule-asr-hackathon-mixture`. Elle lit un token d'écriture depuis
+le secret Kaggle `HF_TOKEN` ; le secret n'est jamais stocké dans le dépôt.
