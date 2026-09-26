@@ -56,6 +56,8 @@ class AuditDatasetsTest(unittest.TestCase):
         self.assertEqual(row["channels"], 1)
         self.assertEqual(row["text_normalized"], "n'drɛ ɔ kɔ")
         self.assertEqual(row["status"], "accept")
+        self.assertEqual(row["preprocessing_actions"], "")
+        self.assertGreater(float(row["words_per_second"]), 0.0)
 
     def test_duplicate_is_cross_split_only_when_partition_changes(self):
         base = {

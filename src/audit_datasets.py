@@ -61,6 +61,8 @@ class AuditThresholds:
     review_trailing_silence_seconds: float = 2.0
     review_rms_dbfs: float = -45.0
     review_clipping_fraction: float = 0.001
+    review_min_words_per_second: float = 0.4
+    review_max_words_per_second: float = 3.5
 
 
 def parse_args() -> argparse.Namespace:
@@ -178,6 +180,7 @@ def audit_example(
     example_id = _safe_string(item.get(spec.id_column), f"row-{row_index}")
     speaker_id = _safe_string(item.get(spec.speaker_column), "unknown")
     reasons: list[str] = []
+    preprocessing_actions: list[str] = []
 
     row: dict[str, Any] = {
         "source": spec.source,
@@ -191,6 +194,7 @@ def audit_example(
         "text_normalized": normalized_text,
         "text_words": len(normalized_text.split()),
         "text_characters": len(normalized_text),
+        "words_per_second": "",
         "text_sha256": hashlib.sha256(normalized_text.encode("utf-8")).hexdigest(),
         "decode_ok": False,
         "sample_rate": "",
@@ -207,6 +211,7 @@ def audit_example(
         "silence_amplitude_threshold": "",
         "audio_sha256": "",
         "status": "",
+        "preprocessing_actions": "",
         "review_reasons": "",
         "audio_duplicate_cross_split": False,
         "text_duplicate_cross_split": False,
@@ -238,6 +243,7 @@ def audit_example(
                 "channels": channels,
                 "num_samples": int(waveform.size),
                 "duration_seconds": duration,
+                "words_per_second": len(normalized_text.split()) / duration,
                 "peak": peak,
                 "peak_dbfs": _dbfs(peak),
                 "rms": rms,
@@ -253,9 +259,9 @@ def audit_example(
         )
 
         if sample_rate != 16_000:
-            reasons.append("resample_required")
+            preprocessing_actions.append("resample_to_16khz")
         if channels != 1:
-            reasons.append("downmix_required")
+            preprocessing_actions.append("downmix_to_mono")
         if duration < thresholds.min_duration_seconds:
             reasons.append("too_short")
         if duration > thresholds.target_max_duration_seconds:
@@ -270,6 +276,11 @@ def audit_example(
             reasons.append("long_leading_silence")
         if trailing > thresholds.review_trailing_silence_seconds:
             reasons.append("long_trailing_silence")
+        words_per_second = len(normalized_text.split()) / duration
+        if words_per_second < thresholds.review_min_words_per_second:
+            reasons.append("low_text_audio_ratio")
+        if words_per_second > thresholds.review_max_words_per_second:
+            reasons.append("high_text_audio_ratio")
     except Exception as error:  # l'erreur complète reste visible dans le CSV
         reasons.append(f"decode_error:{type(error).__name__}:{error}")
 
@@ -280,6 +291,7 @@ def audit_example(
         or "too_short" in reasons
     )
     row["status"] = "reject" if hard_reject else ("review" if reasons else "accept")
+    row["preprocessing_actions"] = "|".join(preprocessing_actions)
     row["review_reasons"] = "|".join(reasons)
     return row
 
@@ -370,8 +382,12 @@ def _summarize(
         speakers = {row["speaker_id"] for row in members}
         status_counts = Counter(row["status"] for row in members)
         reason_counts: Counter[str] = Counter()
+        action_counts: Counter[str] = Counter()
         for row in members:
             reason_counts.update(filter(None, str(row["review_reasons"]).split("|")))
+            action_counts.update(
+                filter(None, str(row["preprocessing_actions"]).split("|"))
+            )
         summary["groups"][f"{source}:{split}"] = {
             "examples": len(members),
             "decoded": sum(bool(row["decode_ok"]) for row in members),
@@ -380,6 +396,7 @@ def _summarize(
             "duration_min": min(durations) if durations else None,
             "duration_max": max(durations) if durations else None,
             "status_counts": dict(sorted(status_counts.items())),
+            "preprocessing_action_counts": dict(sorted(action_counts.items())),
             "review_reason_counts": dict(sorted(reason_counts.items())),
         }
     return summary

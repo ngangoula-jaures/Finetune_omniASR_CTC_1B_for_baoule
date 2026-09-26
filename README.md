@@ -14,7 +14,8 @@ Le protocole complet est décrit dans [PLAN_FINETUNING_OMNIASR_CTC_1B_BAOULE.md]
 - [x] Script d'audit automatique des datasets
 - [x] Tests unitaires de la normalisation
 - [x] Configurations initiales du smoke test et du fine-tuning
-- [ ] Exécution de l'audit complet sur Kaggle
+- [x] Exécution de l'audit complet sur Kaggle
+- [x] Analyse statistique initiale de l'audit
 - [ ] Revue des exemples signalés par l'audit
 - [ ] Préparation du mélange MixtureParquet
 - [ ] Smoke test CTC-1B sur les deux T4
